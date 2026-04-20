@@ -33,7 +33,7 @@ uchicagofinance/
 - **Node 20+** and **npm 10+**
 - **Git**
 - A **uchicago.edu Google account** with access to the source spreadsheets (for backend ingestion)
-- Access to the `USG Finance` Google Cloud project (for backend ingestion)
+- **`oauth_client.json`** emailed to you by the repo maintainer — see [Backend setup](#backend-setup) below
 
 ---
 
@@ -50,18 +50,37 @@ cd uchicagofinance
 
 Ingests allocation data from Google Drive spreadsheets into pandas.
 
+### 1. Install dependencies
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
-Then follow the OAuth setup in **[backend/onboarding/README.md](backend/onboarding/README.md)** to:
-1. Get an OAuth client JSON from Google Cloud Console
-2. Place it at `.secrets/oauth_client.json`
-3. Run `python backend/load_sheet.py <FILE_ID>` — first run opens a browser for sign-in
+### 2. Get the OAuth client file
+The repo maintainer will email you a file named `oauth_client.json`. Do not share this file further — if you need to onboard someone, ask the maintainer to email them directly.
 
-Current registered data sources, per-file quirks, and the procedure for adding new sheets are all in that doc.
+Create the `.secrets/` folder and place the file inside:
+```bash
+mkdir -p .secrets
+# move the emailed oauth_client.json into .secrets/oauth_client.json
+```
+
+`.secrets/` is gitignored — the file will never be committed.
+
+### 3. First run
+```bash
+python backend/load_sheet.py <FILE_ID>
+```
+- A browser opens → sign in with your **uchicago.edu** account → approve Drive read access
+- Your personal access token caches to `.secrets/authorized_user.json` (this file is per-user — never share it)
+- Subsequent runs are silent
+
+### More details
+Current registered data sources, per-file quirks, troubleshooting, and the procedure for adding new sheets are all in **[backend/onboarding/README.md](backend/onboarding/README.md)**.
+
+### For the maintainer only
+If you're setting up the Google Cloud project from scratch (or rotating the OAuth client), see Section 4 of [backend/onboarding/README.md](backend/onboarding/README.md). Everyone else can skip that.
 
 ---
 
