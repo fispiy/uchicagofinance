@@ -1,0 +1,112 @@
+# UChicago USG Finance
+
+Permanent, USG-managed system for managing and displaying student organization allocation data. Two components:
+
+- **Internal allocation platform** — committee chairs enter suggestions, College Council reviews, VPSO publishes
+- **Public website** — students browse official allocation results, historical data, and rankings
+
+Full product context, roles, data model, and workflow: **[CLAUDE.md](CLAUDE.md)**.
+
+---
+
+## Repo layout
+
+```
+uchicagofinance/
+├── CLAUDE.md               # product spec, roles, data model, workflow
+├── README.md               # this file — setup instructions
+├── plan/                   # planning docs
+├── backend/                # python — data ingestion + (eventually) API
+│   ├── load_sheet.py       # google drive → pandas loader
+│   ├── requirements.txt
+│   └── onboarding/         # data-pull onboarding (auth, sources, how to add new sheets)
+├── frontend/               # vite + react + typescript
+├── data/                   # local data artifacts (gitignored)
+└── .secrets/               # oauth credentials (gitignored — never commit)
+```
+
+---
+
+## Prerequisites
+
+- **Python 3.11+**
+- **Node 20+** and **npm 10+**
+- **Git**
+- A **uchicago.edu Google account** with access to the source spreadsheets (for backend ingestion)
+- Access to the `USG Finance` Google Cloud project (for backend ingestion)
+
+---
+
+## Clone
+
+```bash
+git clone https://github.com/admin-usg-uchicago/uchicagofinance.git
+cd uchicagofinance
+```
+
+---
+
+## Backend setup
+
+Ingests allocation data from Google Drive spreadsheets into pandas.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+Then follow the OAuth setup in **[backend/onboarding/README.md](backend/onboarding/README.md)** to:
+1. Get an OAuth client JSON from Google Cloud Console
+2. Place it at `.secrets/oauth_client.json`
+3. Run `python backend/load_sheet.py <FILE_ID>` — first run opens a browser for sign-in
+
+Current registered data sources, per-file quirks, and the procedure for adding new sheets are all in that doc.
+
+---
+
+## Frontend setup
+
+Vite + React + TypeScript SPA (both internal platform and public site will live here, routed separately).
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Dev server runs at `http://localhost:5173`.
+
+**Other scripts:**
+- `npm run build` — production build into `frontend/dist/`
+- `npm run preview` — serve the production build locally
+- `npm run lint` — ESLint
+
+---
+
+## Daily workflow
+
+```bash
+# terminal 1 — frontend
+cd frontend && npm run dev
+
+# terminal 2 — backend (ad-hoc data pulls, or later a running API)
+source .venv/bin/activate
+python backend/load_sheet.py <FILE_ID>
+```
+
+---
+
+## Contributing
+
+- **Never commit `.secrets/`** — it's gitignored; keep it that way
+- Before adding a new spreadsheet data source, read the "Adding a new data source" section in [backend/onboarding/README.md](backend/onboarding/README.md)
+- For non-trivial work, follow the workflow protocol in [CLAUDE.md](CLAUDE.md) (discovery → research → planning → execution, tracked under `.claude-project/`)
+
+---
+
+## Useful links
+
+- **Repo:** https://github.com/admin-usg-uchicago/uchicagofinance
+- **Product spec:** [CLAUDE.md](CLAUDE.md)
+- **Data ingestion onboarding:** [backend/onboarding/README.md](backend/onboarding/README.md)
