@@ -69,12 +69,26 @@ mkdir -p .secrets
 `.secrets/` is gitignored — the file will never be committed.
 
 ### 3. First run
+
+`<FILE_ID>` is the long string between `/d/` and `/edit` in a Drive spreadsheet URL. For a first-run sanity check, try the USG Master Log:
+
 ```bash
-python backend/load_sheet.py <FILE_ID>
+python backend/load_sheet.py 1SI-IWAXx3h7mfdqbJ3oiPXFJq0CcMPEV
 ```
+
 - A browser opens → sign in with your **uchicago.edu** account → approve Drive read access
 - Your personal access token caches to `.secrets/authorized_user.json` (this file is per-user — never share it)
+- You should see previews of the `Yearly Allocations`, `Annual Allocations`, and `RSO Directory` tabs
 - Subsequent runs are silent
+
+**Currently registered sources:**
+
+| File | ID |
+|---|---|
+| USG Master Log (RSO directory + ongoing allocations) | `1SI-IWAXx3h7mfdqbJ3oiPXFJq0CcMPEV` |
+| SGFC Annual Cycle (WIP) | `1SdUHg38eCHeE1RcBiX7Exvs2Xnob50LB` |
+
+Full source catalog, tab descriptions, and known quirks: [backend/onboarding/README.md § 7](backend/onboarding/README.md#7-current-data-sources).
 
 ### More details
 Current registered data sources, per-file quirks, troubleshooting, and the procedure for adding new sheets are all in **[backend/onboarding/README.md](backend/onboarding/README.md)**.
