@@ -70,16 +70,20 @@ mkdir -p .secrets
 
 ### 3. First run
 
-`<FILE_ID>` is the long string between `/d/` and `/edit` in a Drive spreadsheet URL. For a first-run sanity check, try the USG Master Log:
+`<FILE_ID>` is the long string between `/d/` and `/edit` in a Drive spreadsheet URL. Run both registered sources as a sanity check:
 
 ```bash
+# USG Master Log — RSO directory + ongoing event allocations
 python backend/load_sheet.py 1SI-IWAXx3h7mfdqbJ3oiPXFJq0CcMPEV
+
+# SGFC Annual Cycle (WIP) — one committee's annual allocation working doc
+python backend/load_sheet.py 1SdUHg38eCHeE1RcBiX7Exvs2Xnob50LB
 ```
 
-- A browser opens → sign in with your **uchicago.edu** account → approve Drive read access
+- On the **first** command a browser opens → sign in with your **uchicago.edu** account → approve Drive read access
 - Your personal access token caches to `.secrets/authorized_user.json` (this file is per-user — never share it)
-- You should see previews of the `Yearly Allocations`, `Annual Allocations`, and `RSO Directory` tabs
-- Subsequent runs are silent
+- The **second** command reuses the cached token and runs silently
+- You should see previews of every tab in each file (tab name, row × col count, first 5 rows)
 
 **Currently registered sources:**
 
