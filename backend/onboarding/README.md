@@ -133,10 +133,12 @@ all_tabs = load_sheet("<FILE_ID>")                   # dict[tab_name, DataFrame]
 
 ## 7. Current data sources
 
-| File | Drive ID | Role | Notes |
-|---|---|---|---|
-| **SGFC Annual Cycle (WIP)** | `1SdUHg38eCHeE1RcBiX7Exvs2Xnob50LB` | One committee's working doc for one annual allocation cycle | .xlsx. 4 tabs trace workflow: `ORIGINAL No cuts; pre-appeal` → `Example` → `No cuts; post-appeal` → `FINAL w cuts; post appeals`. Scratchpad cells mixed with data. |
-| **USG Master Log** | `1SI-IWAXx3h7mfdqbJ3oiPXFJq0CcMPEV` | Canonical ongoing records | .xlsx. 3 tabs: `Yearly Allocations` (event-based decisions, 277 rows), `Annual Allocations` (empty — likely where finalized cycles will land), `RSO Directory (8-6-25)` (master RSO list, 447 rows). |
+The canonical list of registered sheets (key, URL, description) lives in [`backend/sources.yaml`](../sources.yaml) and is rendered into [`Accessed_Sheets.md`](../../Accessed_Sheets.md) at the repo root. This section adds the editorial content the registry doesn't carry: role within the data model, per-tab notes, and known quirks.
+
+| Key | Role | Notes |
+|---|---|---|
+| **`sgfc_annual`** (SGFC Annual Cycle, WIP) | One committee's working doc for one annual allocation cycle | .xlsx. 4 tabs trace workflow: `ORIGINAL No cuts; pre-appeal` → `Example` → `No cuts; post-appeal` → `FINAL w cuts; post appeals`. Scratchpad cells mixed with data. |
+| **`master_log`** (USG Master Log) | Canonical ongoing records | .xlsx. 3 tabs: `Yearly Allocations` (event-based decisions, 277 rows), `Annual Allocations` (empty — likely where finalized cycles will land), `RSO Directory (8-6-25)` (master RSO list, 447 rows). |
 
 ### Known quirks per file
 - **`Yearly Allocations`** — real headers are on row 1 of the xlsx (row 0 is a title). Use `pd.read_excel(..., header=1)` or drop the first data row after loading.
@@ -161,26 +163,34 @@ Follow this checklist whenever a new spreadsheet needs to be ingested (e.g., PCC
 ### 8.1 Confirm access
 1. Open the sheet URL in your browser signed in as **the same uchicago.edu account** used for the OAuth token (`.secrets/authorized_user.json`)
 2. If you see "Request access," ask the owner to share with you (or add you to the Shared Drive)
-3. Extract the Drive ID from the URL
+3. Copy the full sheet URL (or just the Drive ID — the registry accepts either)
 
 ### 8.2 Smoke-test with the existing loader
 ```bash
-python backend/load_sheet.py <NEW_FILE_ID>
+python backend/load_sheet.py <NEW_URL_OR_FILE_ID>
 ```
 This prints every tab's shape and first 5 rows. Verify:
 - All expected tabs appear
 - Data isn't empty
 - Headers look right (first data row should be real data, not a title / merged cell)
 
-### 8.3 Decide how it fits the data model
+### 8.3 Register the sheet
+Add an entry to [`backend/sources.yaml`](../sources.yaml) with a short snake_case `key`, the full URL, and a one-line description (and `committee:` if applicable). Then regenerate the human-readable index:
+
+```bash
+python backend/load_sheet.py --regen-docs
+```
+
+This rewrites [`Accessed_Sheets.md`](../../Accessed_Sheets.md) at the repo root. Commit `sources.yaml` and `Accessed_Sheets.md` together.
+
+### 8.4 Decide how it fits the data model
 Document the file in [Section 7 above](#7-current-data-sources) with:
-- Drive ID
 - Role (master / working doc / historical archive / etc.)
 - Per-tab description
 - Which entity from [CLAUDE.md](../../CLAUDE.md) each tab feeds
 - Known quirks (header row offset, scratchpad cells, empty tabs, etc.)
 
-### 8.4 Handle per-file quirks in the normalization layer
+### 8.5 Handle per-file quirks in the normalization layer
 **Do not modify [load_sheet.py](../load_sheet.py) for file-specific logic.** The loader is a generic downloader. Per-file parsing belongs in a separate module (`backend/normalize/<source>.py` or similar), which:
 - Takes the raw DataFrame/dict from `load_sheet()`
 - Selects the right tab
@@ -189,12 +199,8 @@ Document the file in [Section 7 above](#7-current-data-sources) with:
 
 This keeps the ingestion layer generic and keeps quirks discoverable and testable.
 
-### 8.5 Register the source for scheduled pulls
-Once we have a scheduler (cron / GitHub Actions / Cloud Scheduler — TBD), register the new file ID there so it gets pulled on the daily refresh cadence the public site expects. Update the source registry (location TBD) with:
-- Drive ID
-- Normalizer module path
-- Target entity
-- Refresh frequency
+### 8.6 Wire into scheduled pulls
+Once we have a scheduler (cron / GitHub Actions / Cloud Scheduler — TBD), it should call `python backend/load_sheet.py --all` on the daily refresh cadence the public site expects. Because the registry is the single source of truth, registering a sheet in `sources.yaml` is all it takes for the scheduled job to start pulling it. Per-source extras the scheduler may eventually need (normalizer module path, target entity, refresh frequency override) can be added as new optional fields on the `sources.yaml` entry.
 
 ---
 

@@ -1,0 +1,23 @@
+# Registered Google Sheets the loader can pull from.
+#
+# Adding an entry here tells the loader where to look. It does NOT grant Drive
+# access — each contributor's uchicago.edu account must still be share-listed
+# on the actual file in Google Drive.
+#
+# Fields per entry:
+#   key:         short identifier used on the command line (snake_case, unique)
+#   url:         full Google Sheets URL — must contain /d/<file_id>/
+#   description: one-line summary
+#   committee:   optional — committee that owns the sheet, if applicable
+#
+# After editing this file, regenerate the human-readable index at repo root:
+#   python backend/load_sheet.py --regen-docs
+
+sources:
+  - key: sgfc_annall_2025-2026
+    url: https://docs.google.com/spreadsheets/d/1d0ckfnoHobP251pVqunVgF3pOPuZ9FzXSAUhmXtS5kk/edit?gid=0#gid=0
+    description: sgfc_ annall_2025-2026
+
+  - key: sgfc_yearly_2025-2026
+    url: https://docs.google.com/spreadsheets/d/1f2n9PmRvkbiNfqvRUX3C3Vu_ja62RWk7xn0hmvRcuvs/edit?gid=0#gid=0
+    description: sgfc_yearly_2025-2026
